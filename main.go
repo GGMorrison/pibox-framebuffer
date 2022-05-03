@@ -248,6 +248,10 @@ func stats() {
 
 	var cpuUsage, _ = cpu.Percent(0, false)
 	v, _ := mem.VirtualMemory()
+	cpu=$(</sys/class/thermal/thermal_zone0/temp)/1000
+	gpu=$(vcgencmd measure_temp)
+	SDA =$(sudo hddtemp /dev/sda --numeric)
+	SDB =$(sudo hddtemp /dev/sdb --numeric)
 
 	dc := gg.NewContext(SCREEN_SIZE, SCREEN_SIZE)
 	dc.DrawRectangle(0, 0, 240, 240)
@@ -271,53 +275,11 @@ func stats() {
 	if cpuPercent > 70 {
 		colorMem = RGB{R: 244, G: 199, B: 195}
 	}
+	textOnContext(dc, 180,28,33, "cpu",RGB{R: 160, G: 160, B: 160}, false, gg.AlignCenter)
+	textOnContext(dc, 190,28,33, "gpu",RGB{R: 160, G: 160, B: 160}, false, gg.AlignCenter)
+	textOnContext(dc, 200,28,33, "SDA",RGB{R: 160, G: 160, B: 160}, false, gg.AlignCenter)
+	textOnContext(dc, 210,28,33, "SDB",RGB{R: 160, G: 160, B: 160}, false, gg.AlignCenter)
 	textOnContext(dc, 170, 66, 30, fmt.Sprintf("%v%%", math.Round(v.UsedPercent)), colorMem, true, gg.AlignCenter)
-
-	interfaces, _ := net.Interfaces()
-	for _, inter := range interfaces {
-		if inter.Name == "eth0" {
-			textOnContext(dc, 130, 180, 22, "eth", RGB{R: 160, G: 160, B: 160}, false, gg.AlignLeft)
-			addrs, _ := inter.Addrs()
-			var ipv4 = ""
-			for _, addr := range addrs {
-				ip := addr.String()
-				if strings.Contains(ip, ".") {
-					ipv4 = ip[:len(ip)-3] // assign and remove subnet mask
-				}
-			}
-			if ipv4 == "" {
-				textOnContext(dc, 110, 180, 22, "Disconnected", RGB{R: 100, G: 100, B: 100}, true, gg.AlignRight)
-			} else {
-				w, _ := dc.MeasureString(ipv4)
-				var fontSize float64 = 26
-				if w > 150 {
-					fontSize = 22
-				}
-				textOnContext(dc, 110, 180, fontSize, ipv4, RGB{R: 180, G: 180, B: 180}, true, gg.AlignRight)
-			}
-		} else if inter.Name == "wlan0" {
-			textOnContext(dc, 130, 210, 22, "wifi", RGB{R: 180, G: 180, B: 180}, false, gg.AlignLeft)
-			addrs, _ := inter.Addrs()
-			var ipv4 = ""
-			for _, addr := range addrs {
-				ip := addr.String()
-				if strings.Contains(ip, ".") {
-					ipv4 = ip[:len(ip)-3] // assign and remove subnet mask
-				}
-			}
-			if ipv4 == "" {
-				textOnContext(dc, 110, 210, 22, "Disconnected", RGB{R: 100, G: 100, B: 100}, true, gg.AlignRight)
-			} else {
-				w, _ := dc.MeasureString(ipv4)
-				var fontSize float64 = 26
-				if w > 150 {
-					fontSize = 22
-				}
-				textOnContext(dc, 110, 210, fontSize, ipv4, RGB{R: 180, G: 180, B: 180}, true, gg.AlignRight)
-			}
-
-		}
-	}
 	flushTextToScreen(dc)
 }
 
