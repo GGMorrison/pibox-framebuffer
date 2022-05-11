@@ -239,7 +239,14 @@ func statsOn(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "Stats on\n")
 	statsOff = false
 }
-
+func Native() string {
+    cmd, err := exec.Command("/bin/sh", "/home/pi/pitemp-2.sh").Output()
+    if err != nil {
+    fmt.Printf("error %s", err)
+    }
+    output := string(cmd)
+    return output
+}
 func stats() {
 	defer time.AfterFunc(3*time.Second, stats)
 	if statsOff {
@@ -248,11 +255,7 @@ func stats() {
 
 	var cpuUsage, _ = cpu.Percent(0, false)
 	v, _ := mem.VirtualMemory()
-	cpu=$(</sys/class/thermal/thermal_zone0/temp)/1000
-	gpu=$(vcgencmd measure_temp)
-	SDA =$(sudo hddtemp /dev/sda --numeric)
-	SDB =$(sudo hddtemp /dev/sdb --numeric)
-
+	temps := Native()
 	dc := gg.NewContext(SCREEN_SIZE, SCREEN_SIZE)
 	dc.DrawRectangle(0, 0, 240, 240)
 	dc.SetColor(color.RGBA{51, 51, 51, 255})
@@ -275,10 +278,7 @@ func stats() {
 	if cpuPercent > 70 {
 		colorMem = RGB{R: 244, G: 199, B: 195}
 	}
-	textOnContext(dc, 180,28,33, "cpu",RGB{R: 160, G: 160, B: 160}, false, gg.AlignCenter)
-	textOnContext(dc, 190,28,33, "gpu",RGB{R: 160, G: 160, B: 160}, false, gg.AlignCenter)
-	textOnContext(dc, 200,28,33, "SDA",RGB{R: 160, G: 160, B: 160}, false, gg.AlignCenter)
-	textOnContext(dc, 210,28,33, "SDB",RGB{R: 160, G: 160, B: 160}, false, gg.AlignCenter)
+	textOnContext(dc, 180,28,33, temps,RGB{R: 160, G: 160, B: 160}, false, gg.AlignCenter)
 	textOnContext(dc, 170, 66, 30, fmt.Sprintf("%v%%", math.Round(v.UsedPercent)), colorMem, true, gg.AlignCenter)
 	flushTextToScreen(dc)
 }
