@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"os/exec"
 
 	"github.com/fogleman/gg"
 	"github.com/gonutz/framebuffer"
